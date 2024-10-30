@@ -1,0 +1,51 @@
+Sub RemovePasswordsFromFiles()
+    Dim FolderPath As String
+    Dim Filename As String
+    Dim wb As Workbook
+    Dim Password As String
+    
+    ' Prompt user for folder path
+    FolderPath = Application.InputBox("Enter the folder path containing the Excel files:", Type:=2)
+    If FolderPath = "" Then
+        MsgBox "No folder path provided. Exiting macro.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Ensure the folder path ends with a backslash
+    If Right(FolderPath, 1) <> "\" Then
+        FolderPath = FolderPath & "\"
+    End If
+    
+    ' Prompt user for password
+    Password = Application.InputBox("Enter the password for the Excel files:", Type:=2)
+    If Password = "" Then
+        MsgBox "No password provided. Exiting macro.", vbExclamation
+        Exit Sub
+    End If
+    
+    ' Loop through each Excel file in the folder
+    Filename = Dir(FolderPath & "*.xlsx")
+    Do While Filename <> ""
+        ' Open the workbook with the password
+        Set wb = Workbooks.Open(Filename:=FolderPath & Filename, Password:=Password)
+        
+        ' Remove workbook password
+        wb.Password = ""
+        
+        ' Remove sheet protection (if each sheet is also protected with the same password)
+        Dim ws As Worksheet
+        For Each ws In wb.Worksheets
+            ws.Unprotect Password:=Password
+        Next ws
+        
+        ' Save and close the workbook
+        wb.Save
+        wb.Close
+        
+        ' Move to the next file
+        Filename = Dir
+    Loop
+    
+    MsgBox "Passwords removed from all files!", vbInformation
+End Sub
+
