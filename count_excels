@@ -1,0 +1,40 @@
+Sub CountRowsInExcelFiles()
+    Dim FolderPath As String
+    Dim FileName As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim RowCount As Long
+    Dim ResultSheet As Worksheet
+    Dim LastRow As Long
+
+    ' Set the folder path where the Excel files are located
+    FolderPath = "C:\Your\Folder\Path\"  ' <-- Change this to your folder path
+    If Right(FolderPath, 1) <> "\" Then FolderPath = FolderPath & "\"
+
+    ' Create a new worksheet to display results
+    Set ResultSheet = ThisWorkbook.Sheets.Add
+    ResultSheet.Name = "Row Counts"
+    ResultSheet.Cells(1, 1).Value = "File Name"
+    ResultSheet.Cells(1, 2).Value = "Row Count (from Row 2)"
+
+    ' Loop through each Excel file in the folder
+    FileName = Dir(FolderPath & "*.xls*")  ' Match both .xlsx and .xls files
+    Do While FileName <> ""
+        Set wb = Workbooks.Open(FolderPath & FileName, ReadOnly:=True)
+        
+        ' Count rows in the first worksheet, starting from Row 2
+        Set ws = wb.Sheets(1)
+        RowCount = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row - 1  ' Subtract 1 to exclude the header row
+        
+        ' Record the result in the ResultSheet
+        LastRow = ResultSheet.Cells(ResultSheet.Rows.Count, 1).End(xlUp).Row + 1
+        ResultSheet.Cells(LastRow, 1).Value = FileName
+        ResultSheet.Cells(LastRow, 2).Value = RowCount
+
+        ' Close the workbook
+        wb.Close SaveChanges:=False
+        FileName = Dir
+    Loop
+
+    MsgBox "Row counts have been recorded on the 'Row Counts' sheet.", vbInformation
+End Sub
